@@ -7,15 +7,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final AccountNoGenerator accountNoGenerator;
 
     @Transactional
-    public void createAccount(Account account) {
+    public void createAccount(String name) {
+        String accountNo = accountNoGenerator.generate();
+        Account account = new Account(accountNo, name);
         accountRepository.save(account);
     }
 
@@ -28,16 +32,33 @@ public class AccountService {
     @Transactional
     public void deleteAccount(String accountNo) {
         Account account = accountRepository.findByAccountNo(accountNo).orElseThrow();
-        account.checkClosableAccount();
+        account.checkCancelableAccount();
         accountRepository.delete(account);
     }
 
     @Transactional
-    public Account deposit(String accountNo, Long balance) {
+    public void deposit(String accountNo, Long balance) {
         Account account = accountRepository.findByAccountNo(accountNo)
                 .orElseThrow(() -> new AccountNotFoundException(accountNo + "Account Not Found"));
         account.deposit(balance);
         accountRepository.save(account);
-        return account;
+    }
+
+    @Transactional
+    public void withdraw(String accountNo, Long balance) {
+        Account account = accountRepository.findByAccountNo(accountNo)
+                .orElseThrow(() -> new AccountNotFoundException(accountNo + "Account Not Found"));
+        account.withdraw(balance);
+        accountRepository.save(account);
+    }
+
+    @Transactional
+    public void transfer(String accountNo, String receivingAccountNo, Long balance) {
+        Account account = accountRepository.findByAccountNo(accountNo)
+                .orElseThrow(() -> new AccountNotFoundException(accountNo + "Account Not Found"));
+        Account receivingAccount = accountRepository.findByAccountNo(accountNo)
+                .orElseThrow(() -> new AccountNotFoundException(receivingAccountNo + "Account Not Found"));
+        account.transfer(receivingAccount, balance);
+        accountRepository.saveAll(List.of(account, receivingAccount));
     }
 }
