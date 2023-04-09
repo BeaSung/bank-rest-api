@@ -19,7 +19,7 @@ public class AccountService {
     @Transactional
     public void createAccount(String name) {
         String accountNo = accountNoGenerator.generate();
-        Account account = new Account(accountNo, name);
+        Account account = Account.open(accountNo, name);
         accountRepository.save(account);
     }
 

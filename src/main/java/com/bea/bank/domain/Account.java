@@ -9,13 +9,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Getter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="accounts")
 public class Account {
 
+    @EqualsAndHashCode.Include
     @Id
     private Long id;
     private String accountNo;
@@ -23,11 +25,9 @@ public class Account {
     private Long balance;
     private List<TransactionHistory> transactionHistories = new ArrayList<>();
 
-    public Account(String accountNo, String name) {
-        this.accountNo = accountNo;
-        this.name = name;
-        this.balance = 0L;
-        this.transactionHistories = new ArrayList<>();
+    // 계좌 개설용 static factory method
+    public static Account open(String accountNo, String name) {
+        return new Account(null, accountNo, name, 0L, new ArrayList<>());
     }
 
     public void deposit(Long money) {
