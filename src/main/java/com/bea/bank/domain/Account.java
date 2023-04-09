@@ -14,9 +14,15 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="accounts")
+@Table(name = "accounts")
 public class Account {
 
+    // 값에 대해 의미를 부여하기 위해 의미 있는 이름의 상수로 선언
+    private static final Long ACCOUNT_OPENING_BALANCE = 0L;
+    private static final int MINIMUM_NAME_LENGTH = 2;
+    private static final int MAXIMUM_NAME_LENGTH = 10;
+
+    // 엔티티는 식별자로 비교하기 위해서 id필드만 Include를 선언
     @EqualsAndHashCode.Include
     @Id
     private Long id;
@@ -27,7 +33,10 @@ public class Account {
 
     // 계좌 개설용 static factory method
     public static Account open(String accountNo, String name) {
-        return new Account(null, accountNo, name, 0L, new ArrayList<>());
+        if (name.length() < MINIMUM_NAME_LENGTH || name.length() > MAXIMUM_NAME_LENGTH) {
+            throw new IllegalArgumentException("이름은 2자 이상 10자 이하로 입력해주세요.");
+        }
+        return new Account(null, accountNo, name, ACCOUNT_OPENING_BALANCE, new ArrayList<>());
     }
 
     public void deposit(Long money) {
